@@ -1,0 +1,315 @@
+<title>Elbe 3 Siege</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: schmale Spalte wie ein Spielbericht – Kopf mit Wochenwahl, dann je Spieler eine Zeile mit Spiel-Chips */
+:root {
+  --bg: #eef2f4;
+  --surface: #ffffff;
+  --ink: #12222e;
+  --muted: #5b6b77;
+  --line: #d3dce2;
+  --table: #1b4f7a;        /* Plattenblau */
+  --table-ink: #ffffff;
+  --win: #1f7a4d;
+  --win-bg: #e3f3ea;
+  --loss: #9a3b33;
+  --loss-bg: #f7e6e3;
+  --ball: #e8833a;         /* Ballorange, sparsam */
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e171e; --surface: #16222c; --ink: #e4ecf1; --muted: #93a4b0; --line: #2a3a46;
+    --table: #2d6a9c; --table-ink: #ffffff; --win: #6cd39d; --win-bg: #183a2a; --loss: #f0998f; --loss-bg: #3d2120;
+    --ball: #f09a55; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e171e; --surface: #16222c; --ink: #e4ecf1; --muted: #93a4b0; --line: #2a3a46;
+  --table: #2d6a9c; --table-ink: #ffffff; --win: #6cd39d; --win-bg: #183a2a; --loss: #f0998f; --loss-bg: #3d2120;
+  --ball: #f09a55; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.5 var(--font-body); }
+.wrap { max-width: 860px; margin: 0 auto; padding-inline: 16px; padding-block: 0 48px; }
+
+header.hero { background: var(--table); color: var(--table-ink); padding-block: 28px 22px; position: relative; overflow: hidden; }
+header.hero::after { /* Mittellinie der Platte */
+  content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 2px solid rgba(255,255,255,.18); pointer-events: none;
+}
+header.hero .wrap { padding-block: 0; position: relative; z-index: 1; display: grid; gap: 6px; }
+.club { font: 600 13px/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+h1 { font: 700 clamp(40px, 9vw, 64px)/0.95 var(--font-display); margin: 0; text-wrap: balance; letter-spacing: .01em; }
+h1 .ball { display: inline-block; width: .32em; height: .32em; border-radius: 50%; background: var(--ball); vertical-align: .55em; margin-left: .08em; }
+.lead { margin: 4px 0 0; max-width: 62ch; opacity: .9; }
+
+.stand { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 10px; font-size: 14px; }
+.stand span { opacity: .85; font-variant-numeric: tabular-nums; }
+.refresh {
+  color: var(--table-ink); text-decoration: none; font-weight: 600; border: 1px solid rgba(255,255,255,.55);
+  border-radius: 6px; padding: 6px 12px;
+}
+.refresh:hover { background: rgba(255,255,255,.12); }
+.refresh:focus-visible { outline: 2px solid var(--ball); outline-offset: 2px; }
+
+.weekbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 18px; }
+.weekbar button {
+  font: 600 15px/1 var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 6px; padding: 9px 14px; cursor: pointer;
+}
+.weekbar button:hover:not(:disabled) { border-color: var(--table); }
+.weekbar button:disabled { opacity: .45; cursor: default; }
+.weekbar button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--ball); outline-offset: 2px; }
+.range { font: 700 24px/1.1 var(--font-display); letter-spacing: .02em; min-width: 0; }
+.range small { display: block; font: 400 13px/1.3 var(--font-body); color: var(--muted); letter-spacing: 0; }
+.spacer { flex: 1; }
+
+.summary { margin: 18px 0 8px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.summary strong { color: var(--ink); }
+
+.list { display: grid; gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; }
+.score {
+  grid-row: span 3; align-self: start; width: 64px; text-align: center; background: var(--table); color: var(--table-ink);
+  border-radius: 6px; padding: 8px 4px 6px; font: 700 34px/1 var(--font-display); font-variant-numeric: tabular-nums;
+}
+.score small { display: block; font: 600 11px/1.2 var(--font-body); letter-spacing: .08em; text-transform: uppercase; opacity: .85; margin-top: 3px; }
+.score.perfect { box-shadow: inset 0 -4px 0 var(--ball); }
+.name { font: 700 24px/1.1 var(--font-display); margin: 0; min-width: 0; }
+.meta { color: var(--muted); font-size: 14px; min-width: 0; }
+.meta a { color: inherit; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.chip { display: inline-flex; gap: 6px; align-items: baseline; border-radius: 5px; padding: 3px 8px; font-size: 13px; border: 1px solid transparent; }
+.chip.w { background: var(--win-bg); color: var(--win); }
+.chip.l { background: var(--loss-bg); color: var(--loss); }
+.chip b { font-weight: 700; letter-spacing: .04em; }
+.chip .sets { font: 500 12px/1 var(--font-mono); }
+.chip .vs { color: var(--ink); opacity: .75; }
+
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 8px; padding: 24px; color: var(--muted); }
+.empty strong { color: var(--ink); display: block; font: 700 22px/1.2 var(--font-display); margin-bottom: 4px; }
+
+details.all { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 14px; }
+details.all summary { cursor: pointer; font: 700 20px/1.2 var(--font-display); }
+.tablewrap { overflow-x: auto; margin-top: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+td a { color: var(--table); }
+:root[data-theme="dark"] td a { color: var(--ink); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) td a { color: var(--ink); } }
+.foot { margin-top: 28px; color: var(--muted); font-size: 13px; }
+
+.tabs { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; }
+.tabrow { display: flex; gap: 4px; padding-block: 0; }
+.tabs button {
+  font: 700 19px/1 var(--font-display); letter-spacing: .02em; color: var(--muted); background: none; border: 0;
+  border-bottom: 3px solid transparent; padding: 14px 12px 11px; cursor: pointer;
+}
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ball); }
+.tabs button:focus-visible { outline: 2px solid var(--ball); outline-offset: -2px; }
+
+.ranking td.num, .ranking th.num { text-align: right; white-space: nowrap; }
+.ranking td.rank { color: var(--muted); }
+.ranking td.big { font: 700 22px/1 var(--font-display); color: var(--table); }
+:root[data-theme="dark"] .ranking td.big { color: var(--ink); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ranking td.big { color: var(--ink); } }
+.ranking tr.top td { background: var(--win-bg); }
+.ranking .who { font-weight: 600; }
+.ranking details summary { cursor: pointer; list-style: none; }
+.ranking details summary::-webkit-details-marker { display: none; }
+.ranking details summary::after { content: " ▸"; color: var(--muted); font-size: 12px; }
+.ranking details[open] summary::after { content: " ▾"; }
+.ranking ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.ranking .team { color: var(--muted); font-size: 13px; }
+
+@media (max-width: 480px) {
+  .card { grid-template-columns: 1fr; }
+  .score { grid-row: auto; width: auto; display: flex; align-items: baseline; gap: 8px; justify-content: flex-start; padding: 6px 10px; font-size: 26px; }
+  .score small { margin: 0; }
+}
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="club">TTC Elbe Dresden · Punktspiele</div>
+    <h1>3 Siege<span class="ball" aria-hidden="true"></span></h1>
+    <p class="lead">Wer hat in einem Punktspiel mindestens drei Spiele gewonnen? Normal sind das zwei Einzel und ein Doppel, mit Entscheidungsdoppel auch zwei Doppel und ein oder zwei Einzel.</p>
+    <div class="stand"><span id="stand"></span><a id="refresh" class="refresh" target="_blank" rel="noopener" hidden>Jetzt aktualisieren ↗</a></div>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Ansicht">
+  <div class="wrap tabrow">
+    <button type="button" role="tab" id="tab-week" aria-controls="panel-week" aria-selected="true">Woche</button>
+    <button type="button" role="tab" id="tab-season" aria-controls="panel-season" aria-selected="false" tabindex="-1">Saisonwertung</button>
+  </div>
+</nav>
+
+<main class="wrap" id="panel-week" role="tabpanel" aria-labelledby="tab-week">
+  <div class="weekbar">
+    <button id="prev" type="button" aria-label="Eine Woche zurück">← Woche davor</button>
+    <div class="range" id="range" aria-live="polite"></div>
+    <div class="spacer"></div>
+    <button id="next" type="button" aria-label="Eine Woche vor">Woche danach →</button>
+  </div>
+  <p class="summary" id="summary"></p>
+  <section class="list" id="list"></section>
+
+  <details class="all" id="allbox">
+    <summary id="allsum">Alle Punktspiele im Zeitraum</summary>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Datum</th><th>Mannschaft</th><th>Gegner</th><th>Erg.</th><th>Beste Bilanz</th></tr></thead>
+      <tbody id="alltable"></tbody>
+    </table></div>
+  </details>
+</main>
+
+<main class="wrap" id="panel-season" role="tabpanel" aria-labelledby="tab-season" hidden>
+  <p class="summary" id="season-summary"></p>
+  <div class="tablewrap">
+    <table class="ranking">
+      <thead><tr><th class="num">Platz</th><th>Spieler/in</th><th class="num" title="Punktspiele mit mindestens 3 Siegen">3 Siege</th><th class="num">Punktspiele</th></tr></thead>
+      <tbody id="season-table"></tbody>
+    </table>
+  </div>
+</main>
+
+<div class="wrap"><p class="foot" id="foot"></p></div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const DAY = 864e5;
+const fmt = d => d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+const fmtShort = d => d.toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" });
+const parse = s => { const [y, m, d] = s.slice(0, 10).split("-").map(Number); return new Date(y, m - 1, d); };
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const surnames = arr => arr.map(n => n.split(" ").slice(-1)[0]).join("/");
+
+const ref = parse(DATA.generated);
+let offset = 0; // 0 = die letzten 7 Tage bis zum Stand der Daten
+const earliest = DATA.matches.length ? Math.min(...DATA.matches.map(m => parse(m.date).getTime())) : ref.getTime();
+
+function render() {
+  const end = new Date(ref.getTime() - offset * 7 * DAY);
+  const start = new Date(end.getTime() - 6 * DAY);
+  const inRange = DATA.matches.filter(m => { const d = parse(m.date); return d >= start && d <= end; });
+
+  document.getElementById("range").innerHTML =
+    `${fmt(start).slice(0, 6)} – ${fmt(end)}<small>${offset === 0 ? "letzte 7 Tage" : `${offset} ${offset === 1 ? "Woche" : "Wochen"} früher`}</small>`;
+  document.getElementById("next").disabled = offset === 0;
+  document.getElementById("prev").disabled = start.getTime() <= earliest;
+
+  const hits = [];
+  for (const m of inRange) for (const p of m.players) if (p.wins >= 3) hits.push({ m, p });
+  hits.sort((a, b) => b.p.wins - a.p.wins || b.m.date.localeCompare(a.m.date) || a.p.name.localeCompare(b.p.name, "de"));
+
+  const people = new Set(hits.map(h => h.p.name)).size;
+  document.getElementById("summary").innerHTML = inRange.length
+    ? `<strong>${people}</strong> ${people === 1 ? "Spieler/in" : "Spieler/innen"} mit 3 Siegen · ${inRange.length} Punktspiele mit Spielbericht im Zeitraum`
+    : "";
+
+  const list = document.getElementById("list");
+  if (!hits.length) {
+    list.innerHTML = `<div class="empty"><strong>${inRange.length ? "Diesmal niemand mit 3 Siegen" : "Keine Punktspiele in diesem Zeitraum"}</strong>${
+      inRange.length ? "Es gab Punktspiele, aber niemand hat drei Spiele gewonnen." : "Für diese sieben Tage liegt kein Spielbericht vor. Blättere mit „Woche davor“ zurück."}</div>`;
+  } else {
+    list.innerHTML = hits.map(({ m, p }) => {
+      const played = p.games.length, perfect = p.wins === played;
+      const chips = p.games.map(g => `<span class="chip ${g.won ? "w" : "l"}" title="${esc(g.kind)}${g.partner.length ? " mit " + esc(g.partner.join(", ")) : ""} gegen ${esc(g.opponents.join(" / "))}">
+          <b>${g.kind === "Doppel" ? "D" : "E"}</b><span class="sets">${esc(g.sets)}</span><span class="vs">${esc(surnames(g.opponents))}</span></span>`).join("");
+      return `<article class="card">
+        <div class="score${perfect ? " perfect" : ""}">${p.wins}<small>von ${played}</small></div>
+        <h2 class="name">${esc(p.name)}</h2>
+        <div class="meta">${esc(m.team)} · ${esc(m.league)}<br>${fmtShort(parse(m.date))} · ${m.home ? "gegen" : "bei"} ${esc(m.opponent)} <strong>${esc(m.result ?? "")}</strong> · <a href="${esc(m.report)}" target="_blank" rel="noopener">Spielbericht</a></div>
+        <div class="chips">${chips}</div>
+      </article>`;
+    }).join("");
+  }
+
+  const box = document.getElementById("allbox");
+  box.hidden = !inRange.length;
+  document.getElementById("allsum").textContent = `Alle Punktspiele im Zeitraum (${inRange.length})`;
+  document.getElementById("alltable").innerHTML = [...inRange].sort((a, b) => a.date.localeCompare(b.date) || a.team.localeCompare(b.team, "de", { numeric: true })).map(m => {
+    const best = [...m.players].sort((a, b) => b.wins - a.wins)[0];
+    return `<tr><td>${fmtShort(parse(m.date))}</td><td>${esc(m.team)}<br><span style="color:var(--muted)">${esc(m.league)}</span></td>
+      <td>${m.home ? "" : "@ "}${esc(m.opponent)}</td><td><a href="${esc(m.report)}" target="_blank" rel="noopener">${esc(m.result ?? "–")}</a></td>
+      <td>${best ? `${esc(best.name)} ${best.wins}/${best.games.length}` : "–"}</td></tr>`;
+  }).join("");
+}
+
+function renderSeason() {
+  const by = new Map();
+  for (const m of DATA.matches) for (const p of m.players) {
+    const r = by.get(p.name) || { name: p.name, played: 0, hits: [] };
+    r.played++;
+    if (p.wins >= 3) r.hits.push({ m, p });
+    by.set(p.name, r);
+  }
+  const rows = [...by.values()].filter(r => r.hits.length)
+    .sort((a, b) => b.hits.length - a.hits.length || a.played - b.played || a.name.localeCompare(b.name, "de"));
+
+  let rank = 0, prev = null;
+  rows.forEach((r, i) => {
+    const key = `${r.hits.length}|${r.played}`;
+    if (key !== prev) { rank = i + 1; prev = key; }
+    r.rank = rank;
+  });
+
+  const total = rows.reduce((s, r) => s + r.hits.length, 0);
+  const first = DATA.matches.length ? DATA.matches[DATA.matches.length - 1].date : null;
+  document.getElementById("season-summary").innerHTML = rows.length
+    ? `<strong>${rows.length}</strong> Spieler/innen haben diese Saison zusammen <strong>${total}</strong>-mal 3 Siege geholt · ${DATA.matches.length} Punktspiele seit ${first ? fmt(parse(first)) : "–"}`
+    : "In dieser Saison hat noch niemand 3 Siege in einem Punktspiel geholt.";
+
+  document.getElementById("season-table").innerHTML = rows.map(r => {
+    const list = r.hits.sort((a, b) => b.m.date.localeCompare(a.m.date)).map(({ m, p }) =>
+      `<li>${fmtShort(parse(m.date))} ${m.home ? "gegen" : "bei"} ${esc(m.opponent)} ${esc(m.result ?? "")} · ${p.wins} von ${p.games.length} · <a href="${esc(m.report)}" target="_blank" rel="noopener">Bericht</a></li>`).join("");
+    return `<tr class="${r.rank === 1 ? "top" : ""}">
+      <td class="num rank">${r.rank}.</td>
+      <td><details><summary class="who">${esc(r.name)}</summary><ul>${list}</ul></details></td>
+      <td class="num big">${r.hits.length}</td>
+      <td class="num">${r.played}</td></tr>`;
+  }).join("");
+}
+
+const tabs = { week: document.getElementById("tab-week"), season: document.getElementById("tab-season") };
+const panels = { week: document.getElementById("panel-week"), season: document.getElementById("panel-season") };
+function show(name, focus) {
+  for (const k of Object.keys(tabs)) {
+    const on = k === name;
+    tabs[k].setAttribute("aria-selected", on);
+    tabs[k].tabIndex = on ? 0 : -1;
+    panels[k].hidden = !on;
+  }
+  if (focus) tabs[name].focus();
+  try { history.replaceState(null, "", name === "season" ? "#saison" : "#woche"); } catch (e) {}
+}
+tabs.week.addEventListener("click", () => show("week"));
+tabs.season.addEventListener("click", () => show("season"));
+document.querySelector(".tabrow").addEventListener("keydown", e => {
+  if (e.key === "ArrowRight" || e.key === "ArrowLeft") show(tabs.week.getAttribute("aria-selected") === "true" ? "season" : "week", true);
+});
+
+document.getElementById("prev").addEventListener("click", () => { offset++; render(); });
+document.getElementById("next").addEventListener("click", () => { offset = Math.max(0, offset - 1); render(); });
+document.getElementById("stand").textContent =
+  `Stand: ${parse(DATA.generated).toLocaleDateString("de-DE")}, ${DATA.generated.slice(11, 16)} Uhr`;
+if (DATA.repo) {
+  // Öffnet den Workflow auf GitHub; dort startet „Run workflow“ die Aktualisierung (ca. 1–2 Minuten)
+  const a = document.getElementById("refresh");
+  a.href = `https://github.com/${DATA.repo}/actions/workflows/update.yml`;
+  a.title = "Öffnet GitHub. Dort „Run workflow“ klicken, nach 1–2 Minuten die Seite neu laden.";
+  a.hidden = false;
+}
+document.getElementById("foot").textContent =
+  `${DATA.teams} Mannschaften ausgewertet · Quellen: TischtennisLive (STTV, Bezirk Dresden, Stadt Dresden) und myTischtennis/click-TT. Gezählt werden nur ausgespielte Spiele. Automatische Aktualisierung jeden Montag früh.`;
+render();
+renderSeason();
+if (location.hash === "#saison") show("season");
+</script>
